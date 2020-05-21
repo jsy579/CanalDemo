@@ -12,6 +12,8 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.otter.canal.client.CanalConnector;
@@ -29,7 +31,16 @@ import com.alibaba.otter.canal.protocol.Message;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 @Component
+@PropertySource("classpath:canal.properties")
+@ConfigurationProperties(prefix = "canal")
 public class CanalClient {
+	private String ip;
+	private int port;
+	private String destination;
+	private String username;
+	private String password;
+	
+	
 	private Queue<String> SQL_QUEUE = new ConcurrentLinkedQueue<>();
 	private volatile boolean running = false;
 	private Thread thread = null;
@@ -47,10 +58,8 @@ public class CanalClient {
 
 	public void run() {
 		System.out.println("run....");
-		String ip = "192.168.0.106";
-		String destination = "example";
-		CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress(ip, 11111), destination,
-				"canal", "canal");
+		CanalConnector connector = CanalConnectors.newSingleConnector(new InetSocketAddress(ip, port), destination,
+				username, password);
 		int batchSize = 5 * 1024;
 		connector.connect();
 		connector.subscribe(".*\\..*");
@@ -303,4 +312,46 @@ public class CanalClient {
 		CanalClient canalClient = new CanalClient();
 		canalClient.process();
 	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getDestination() {
+		return destination;
+	}
+
+	public void setDestination(String destination) {
+		this.destination = destination;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	
 }
